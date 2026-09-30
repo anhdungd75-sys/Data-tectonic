@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kate – notification to game prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b64e6;--bg2:#062d85;--card:#fff;--glass:rgba(255,255,255,.94);--ink:#0d1b33;--mute:#56688a;--line:#dbe7fb;--accent:#0b5fe0;--gold:#ffc53d;--ok:#15803d;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--card:#11223f;--glass:rgba(17,34,63,.95);--ink:#eaf2ff;--mute:#9db3d6;--line:#26406b;--bg:#0a3f9c;--bg2:#041a4d;--ok:#4ade80;--accent:#6aa5ff}}
+:root[data-theme="dark"]{--card:#11223f;--glass:rgba(17,34,63,.95);--ink:#eaf2ff;--mute:#9db3d6;--line:#26406b;--bg:#0a3f9c;--bg2:#041a4d;--ok:#4ade80;--accent:#6aa5ff}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:#04122e;font-family:"Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);display:flex;justify-content:center;align-items:center;padding:16px}
+.phone{width:100%;max-width:380px;height:min(740px,calc(100vh - 32px));border-radius:38px;border:8px solid #111;background:linear-gradient(170deg,var(--bg),var(--bg2));position:relative;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.screen{position:absolute;inset:0}
+/* lock screen */
+.status{display:flex;justify-content:space-between;padding:14px 26px 0;color:#fff;font-size:14px;font-weight:600}
+.clock{text-align:center;color:#fff;margin-top:30px}
+.clock b{display:block;font-size:68px;line-height:1;font-weight:800}
+.clock span{font-size:15px;opacity:.85}
+.notif{position:absolute;left:10px;right:10px;top:210px;background:var(--glass);border-radius:20px;padding:12px 14px;text-decoration:none;color:var(--ink);display:block;box-shadow:0 8px 24px rgba(0,0,0,.25);transform:translateY(-320px);opacity:0;cursor:pointer}
+.notif.in{animation:drop .7s cubic-bezier(.2,1.2,.4,1) forwards}
+@keyframes drop{from{transform:translateY(-320px);opacity:0}to{transform:none;opacity:1}}
+.notif:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.head{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mute)}
+.ico{width:22px;height:22px;border-radius:6px;background:var(--accent);color:#fff;font-size:10px;font-weight:800;display:grid;place-items:center}
+.head .t{margin-left:auto}
+.notif h3{margin:8px 0 2px;font-size:16px;font-weight:800}
+.notif p{margin:0;font-size:14px;line-height:1.35}
+.meter{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:var(--mute)}
+.track{flex:1;height:8px;border-radius:5px;background:var(--line);overflow:hidden}
+.track i{display:block;height:100%;width:0;background:var(--gold);transition:width 1.2s .5s}
+.cta{margin-top:10px;display:inline-block;background:var(--accent);color:#fff;font-weight:600;font-size:13px;padding:7px 12px;border-radius:10px}
+.hint{position:absolute;bottom:26px;width:100%;text-align:center;color:#cfe0ff;font-size:13px}
+/* app screen */
+#app{background:linear-gradient(160deg,var(--bg),var(--bg2));transform:translateY(100%);transition:transform .45s cubic-bezier(.2,.9,.3,1);display:flex;flex-direction:column}
+#app.open{transform:none}
+.bar0{padding:14px 16px 0;display:flex;align-items:center;justify-content:space-between}
+.lockbtn{background:rgba(255,255,255,.18);color:#fff}
+.scroll{overflow-y:auto;padding:4px 14px 30px;flex:1}
+h1{color:#fff;font-size:26px;line-height:1.1;margin:6px 0 4px;font-weight:800}
+.sub{color:#cfe0ff;margin:0 0 14px;font-size:14px}
+h2{color:#fff;font-size:17px;margin:22px 0 10px}
+.hero{background:var(--card);border-radius:20px;padding:16px}
+.coins{display:flex;align-items:baseline;gap:8px}
+.coins b{font-size:48px;line-height:1;font-weight:800;color:var(--accent)}
+.coins span{color:var(--mute);font-size:14px}
+.lvl{display:flex;justify-content:space-between;margin-top:12px;font-size:13px;color:var(--mute)}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--gold);width:0;transition:width .5s}
+.streak{margin-top:10px;font-size:14px}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.badge{background:var(--line);border-radius:999px;padding:4px 10px;font-size:13px}
+.kate{background:var(--card);border-radius:18px 18px 18px 4px;padding:12px 14px;font-size:15px;line-height:1.4}
+.quest,.reward{background:var(--card);border-radius:16px;padding:12px;margin-bottom:10px;display:flex;gap:10px;align-items:center}
+.quest.done{opacity:.6}
+.info{flex:1;min-width:0}
+.info strong{display:block;font-size:15px}
+.info small{color:var(--mute);font-size:13px}
+.prog{height:6px;background:var(--line);border-radius:4px;margin-top:8px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ok);width:0;transition:width .4s}
+button{font:inherit;font-weight:600;border:0;border-radius:12px;padding:9px 13px;background:var(--accent);color:#fff;cursor:pointer;white-space:nowrap}
+button:disabled{background:var(--line);color:var(--mute);cursor:not-allowed}
+.price{font-weight:800;color:var(--accent)}
+.forest{background:var(--card);border-radius:20px;padding:12px 8px 8px;display:flex;justify-content:space-around;gap:6px}
+.plot{text-align:center;flex:1}
+.plot svg{width:100%;max-width:100px;height:auto;overflow:visible}
+.plot small{display:block;font-size:13px;color:var(--mute)}
+.plot.full small{color:var(--ok);font-weight:600}
+.trunk{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(var(--g,0));transition:transform 1s cubic-bezier(.3,1.3,.5,1)}
+.crown{transform-box:fill-box;transform-origin:50% 100%;transform:scale(var(--c,0));transition:transform 1.2s cubic-bezier(.3,1.4,.5,1) .5s}
+.seed{transition:opacity .4s}
+.plot.grown .seed{opacity:0}
+.plot.full .crown{animation:sway 4s ease-in-out 2s infinite}
+.fruit{opacity:0;transition:opacity .6s 1.6s}
+.plot.full .fruit{opacity:1}
+@keyframes sway{0%,100%{transform:scale(1) rotate(-1.5deg)}50%{transform:scale(1) rotate(1.5deg)}}
+.sheet{position:absolute;inset:0;background:rgba(2,10,30,.55);opacity:0;pointer-events:none;transition:opacity .3s;display:flex;align-items:flex-end}
+.sheet.open{opacity:1;pointer-events:auto}
+.panel{background:var(--card);width:100%;max-height:90%;overflow-y:auto;border-radius:22px 22px 0 0;padding:14px 16px 18px;transform:translateY(40px);transition:transform .35s}
+.sheet.open .panel{transform:none}
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.x{background:var(--line);color:var(--ink);padding:4px 11px;font-size:18px}
+.msg{background:var(--line);border-radius:16px 16px 16px 4px;padding:10px 12px;font-size:14px;line-height:1.4;margin-bottom:10px}
+.lbl{font-size:13px;color:var(--mute);margin:0 0 6px}
+.fld{display:block;margin-bottom:8px}
+.fld span{display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
+.fld em{font-style:normal;color:var(--ok)}
+.fld input{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+.doc{font-size:14px;line-height:1.5;padding-left:18px;margin:0 0 10px}
+.sig{border-bottom:2px solid var(--line);height:56px;margin-bottom:10px}
+.sig svg{width:140px;height:50px;overflow:visible}
+.wide{width:100%;padding:12px;margin-top:4px}
+.ref{font-size:13px;color:var(--mute)}
+.demo{font-size:11px;color:var(--mute);text-align:center;margin:10px 0 0}
+#toast{position:absolute;left:50%;bottom:18px;transform:translateX(-50%) translateY(20px);background:#111;color:#fff;padding:10px 16px;border-radius:12px;opacity:0;transition:.3s;pointer-events:none;width:max-content;max-width:90%;font-size:14px}
+#toast.on{opacity:1;transform:translateX(-50%)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.notif.in{animation:none;transform:none;opacity:1}}
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <section class="screen" id="lock" aria-label="Lock screen">
+    <div class="status"><span>KBC</span><span>5G ▮▮▮</span></div>
+    <div class="clock"><b id="clk"></b><span id="date"></span></div>
+    <a class="notif" id="notif" href="#">
+      <div class="head"><span class="ico">KBC</span><span>KBC Mobile · Kate</span><span class="t">now</span></div>
+      <h3 id="nTitle"></h3><p id="nMsg"></p>
+      <div class="meter"><div class="track"><i id="nFill"></i></div><span id="nLeft"></span></div>
+      <span class="cta" id="nCta"></span>
+    </a>
+    <div class="hint">Tap the notification to open Kate Quests</div>
+  </section>
+
+  <section class="screen" id="app" aria-label="Kate Quests">
+    <div class="bar0"><b style="color:#fff">KBC · Kate</b><button class="lockbtn" id="toLock">Lock screen</button></div>
+    <div class="scroll">
+      <h1>Kate Quests</h1>
+      <p class="sub">Small money steps, real rewards.</p>
+      <div class="hero">
+        <div class="coins"><b id="coins">0</b><span>Kate Coins · 1 coin = €1</span></div>
+        <div class="lvl"><span id="lvl"></span><span id="xpTxt"></span></div>
+        <div class="bar"><i id="xpBar"></i></div>
+        <div class="streak" id="streak"></div>
+        <div class="badges" id="badges"></div>
+      </div>
+      <h2>Your forest</h2><div class="forest" id="forest"></div>
+      <h2>Kate says</h2><div class="kate" id="kate"></div>
+      <h2>This week's quests</h2><div id="quests"></div>
+      <h2>Spend your coins</h2><div id="rewards"></div>
+    </div>
+    <div class="sheet" id="sheet" role="dialog" aria-label="Kate fills it in for you">
+      <div class="panel"><div class="ph"><b>Kate is filling this in</b><button class="x" id="sheetX" aria-label="Close">×</button></div>
+      <div id="sheetBody"></div><p class="demo">Demo data</p></div>
+    </div>
+    <div id="toast" role="status" aria-live="polite"></div>
+  </section>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+// ---- one shared state: the game writes it, the notification reads it ----
+const state = { coins:230, xp:0, streak:0, lastDay:null, badges:new Set(), redeemed:[],
+  quests:[
+    {id:'save', short:'Savings', title:'Save €50 toward your festival goal', hint:'Move money to your savings pot', coins:30, xp:40, steps:3, done:0},
+    {id:'tax',  short:'Tax', title:'File your tax return', hint:'Kate fills it in and files it for you', coins:50, xp:60, steps:1, done:0,
+     flow:{partner:'the tax office', intro:"I pulled your income and deductions from your accounts and filled in the return. You don't need to log in anywhere else.",
+       fields:[['Full name','Dinh','from your KBC profile'],['Income 2025','€14,200','from your KBC accounts'],['Deductions','Tuition and savings','found by Kate'],['Expected refund','€310','calculated by Kate']],
+       doc:['Declares the income shown above for 2025','Claims the deductions Kate found','Refund is paid to your KBC account'],
+       done:'Your return is filed with the tax office. Expect your refund in a few weeks.'}},
+    {id:'ins',  short:'Insurance', title:'Switch to a cheaper home insurance', hint:'Kate fills in the form and signs with you', coins:20, xp:30, steps:1, done:0,
+     flow:{partner:'the partner insurer', intro:"I found the same cover for €6 less per month with a partner insurer. I've filled in their form, so you don't need to visit their site.",
+       fields:[['Full name','Dinh','from your KBC profile'],['Address','Voorbeeldstraat 12, 3000 Leuven','from your KBC profile'],['Home','Apartment, 65 m²','from your current policy'],['Current premium','€24 / month','from your KBC insurance'],['New premium','€18 / month','quote from the partner'],['IBAN for premium','BE00 0000 0000 0000','from your KBC account']],
+       doc:['Cover: fire, water damage, theft and liability','Starts on 1 November and ends your current policy','€18 per month by direct debit'],
+       done:'Sent. The partner insurer has your signed form and your old policy will be cancelled for you.'}}
+  ],
+  rewards:[
+    {id:'cine', title:'Cinema ticket', cost:80},
+    {id:'concert', title:'Concert ticket', cost:250},
+    {id:'fest', title:'Festival day pass', cost:500}
+  ]};
+const levelOf = xp => 1 + Math.floor(xp/100);
+const toast = m => { const t=$('toast'); t.textContent=m; t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),2200); };
+
+// ---- notification: picks the next best nudge from the current state ----
+function nextNudge(){
+  const c = state.coins;
+  const near = state.rewards.filter(r=>r.cost>c).sort((a,b)=>a.cost-b.cost)[0];
+  const open = state.quests.find(q=>q.done<q.steps);
+  if(near && near.cost-c <= 100)
+    return {title:`Just €${near.cost-c} away from your ${near.title.toLowerCase()}!`,
+            msg:`You have ${c} of ${near.cost} Kate Coins.${open?' One quest gets you closer.':''}`,
+            pct:c/near.cost*100, left:`€${near.cost-c} to go`, cta:open?'Play a quest':'Open Kate'};
+  const ready = state.rewards.filter(r=>r.cost<=c).pop();
+  if(ready) return {title:`Your ${ready.title.toLowerCase()} is ready`, msg:`You have ${c} Kate Coins. Redeem it in the app.`, pct:100, left:'Unlocked', cta:'Redeem now'};
+  if(open) return {title:'Your next quest takes 1 minute', msg:`${open.title}. Earn ${open.coins} coins and grow a tree.`, pct:state.xp%100, left:'Level '+levelOf(state.xp), cta:'Start quest'};
+  return {title:'Your forest is fully grown', msg:'All quests done this week. New ones arrive soon.', pct:100, left:'Complete', cta:'See forest'};
+}
+function showNotif(){
+  const n = nextNudge(), el = $('notif');
+  el.classList.remove('in'); $('nFill').style.width = '0'; void el.offsetWidth;
+  $('nTitle').textContent = n.title; $('nMsg').textContent = n.msg;
+  $('nLeft').textContent = n.left; $('nCta').textContent = n.cta;
+  el.classList.add('in');
+  setTimeout(()=>{ $('nFill').style.width = Math.min(100,n.pct)+'%'; }, 50);
+}
+// ---- navigation between the two screens ----
+$('notif').onclick = e => { e.preventDefault(); $('app').classList.add('open'); };
+$('toLock').onclick = () => { $('app').classList.remove('open'); showNotif(); };
+
+// ---- game logic ----
+function completeStep(q){
+  if(q.done>=q.steps) return;
+  q.done++;
+  if(q.done===q.steps){
+    const c = Math.round(q.coins*(1+0.1*Math.min(state.streak,5)));
+    state.coins += c; state.xp += q.xp;
+    const today = new Date().toDateString();
+    if(state.lastDay!==today){ state.streak++; state.lastDay=today; }
+    if(state.quests.some(x=>x.done===x.steps)) state.badges.add('First quest');
+    if(state.quests.find(x=>x.id==='tax').done===1) state.badges.add('Tax ready');
+    if(state.quests.every(x=>x.done===x.steps)) state.badges.add('Clean sweep');
+    toast(`+${c} Kate Coins · a tree just grew`);
+    $('kate').textContent = lines[q.id];
+  } else toast('Step done. Keep going.');
+  render();
+}
+function redeem(r){
+  if(state.coins<r.cost) return;
+  state.coins -= r.cost; state.redeemed.push(r.id);
+  toast(`${r.title} unlocked. Check your inbox.`); render();
+}
+const lines = {
+  start:"Hi Dinh. Finish a quest to unlock your concert ticket.",
+  save:"Nice. Your festival pot is growing.",
+  tax:"Your return is filed. Filing early often means an earlier refund.",
+  ins:"Your home insurance is switched. You save €6 a month."
+};
+
+// ---- Kate handles the other company: fill in, review, sign, send ----
+function openFlow(q){
+  const f=q.flow, draw=h=>{ $('sheetBody').innerHTML=h; };
+  $('sheet').classList.add('open');
+  const review=()=>{
+    draw(`<div class="msg">${f.intro}</div><p class="lbl">Check the details. Tap a field to edit it.</p>`+
+      f.fields.map(x=>`<label class="fld"><span>${x[0]}<em>${x[2]}</em></span><input value="${x[1]}"></label>`).join('')+
+      `<button class="wide" id="go1">Looks right</button>`);
+    $('go1').onclick=sign;
+  };
+  const sign=()=>{
+    draw(`<div class="msg">Here is what you're agreeing to. I'll send it to ${f.partner} for you.</div>
+      <ul class="doc">${f.doc.map(x=>`<li>${x}</li>`).join('')}</ul>
+      <div class="sig"><svg viewBox="0 0 140 50" aria-hidden="true"><path id="sigp" d="M8 38 C20 6 30 50 44 22 S70 10 82 34 S110 40 130 18" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" style="stroke-dasharray:300;stroke-dashoffset:300;transition:stroke-dashoffset 1.2s"/></svg></div>
+      <button class="wide" id="go2">Sign with itsme</button>`);
+    $('go2').onclick=()=>{ $('go2').disabled=true; requestAnimationFrame(()=>{ $('sigp').style.strokeDashoffset=0; }); setTimeout(done,1500); };
+  };
+  const done=()=>{
+    draw(`<div class="msg">${f.done}</div><p class="ref">Reference KQ-${Math.floor(100000+Math.random()*900000)}</p><button class="wide" id="go3">Back to quests</button>`);
+    $('go3').onclick=()=>{ $('sheet').classList.remove('open'); completeStep(q); };
+  };
+  review();
+}
+$('sheetX').onclick = () => $('sheet').classList.remove('open');
+
+// ---- forest: one tree per quest ----
+function buildForest(){
+  $('forest').innerHTML = state.quests.map(q=>`<div class="plot" id="plot-${q.id}">
+    <svg viewBox="0 0 80 110" aria-hidden="true">
+      <ellipse cx="40" cy="100" rx="30" ry="7" fill="#6b4a2b" opacity=".35"/>
+      <circle class="seed" cx="40" cy="97" r="4" fill="#6b4a2b"/>
+      <rect class="trunk" x="36" y="56" width="8" height="44" rx="3" fill="#8a5a2b"/>
+      <g class="crown">
+        <circle cx="40" cy="44" r="24" fill="#2f9e5a"/><circle cx="26" cy="54" r="15" fill="#3fb76b"/>
+        <circle cx="54" cy="54" r="15" fill="#3fb76b"/><circle cx="40" cy="30" r="14" fill="#56cc82"/>
+        <g class="fruit" fill="#ffc53d"><circle cx="30" cy="46" r="3"/><circle cx="50" cy="40" r="3"/><circle cx="44" cy="58" r="3"/></g>
+      </g></svg><small></small></div>`).join('');
+}
+function renderForest(){
+  state.quests.forEach(q=>{
+    const el=$('plot-'+q.id), g=q.done/q.steps;
+    el.style.setProperty('--g',g); el.style.setProperty('--c',g*g);
+    el.classList.toggle('grown',g>0); el.classList.toggle('full',g===1);
+    el.querySelector('small').textContent = g===1 ? q.short+' · grown' : q.short+' · '+q.done+'/'+q.steps;
+  });
+}
+function render(){
+  $('coins').textContent = state.coins;
+  const into = state.xp%100;
+  $('lvl').textContent = 'Level '+levelOf(state.xp); $('xpTxt').textContent = `${into} / 100 XP`;
+  $('xpBar').style.width = into+'%';
+  $('streak').textContent = state.streak ? `Streak: ${state.streak} day${state.streak>1?'s':''}` : 'Finish a quest to start your streak';
+  $('badges').innerHTML = [...state.badges].map(b=>`<span class="badge">${b}</span>`).join('');
+  $('quests').innerHTML = '';
+  state.quests.forEach(q=>{
+    const d = q.done===q.steps, el = document.createElement('div');
+    el.className = 'quest'+(d?' done':'');
+    el.innerHTML = `<div class="info"><strong>${q.title}</strong><small>${q.hint} · +${q.coins} coins</small><div class="prog"><i style="width:${q.done/q.steps*100}%"></i></div></div>`;
+    const b = document.createElement('button');
+    b.textContent = d ? 'Done' : (q.flow ? 'Let Kate do it' : q.steps>1 ? `Do step ${q.done+1}` : 'Start'); b.disabled = d;
+    b.onclick = () => q.flow ? openFlow(q) : completeStep(q);
+    el.appendChild(b); $('quests').appendChild(el);
+  });
+  renderForest();
+  $('rewards').innerHTML = '';
+  state.rewards.forEach(r=>{
+    const el = document.createElement('div'); el.className='reward';
+    el.innerHTML = `<div class="info"><strong>${r.title}</strong><small class="price">${r.cost} coins</small></div>`;
+    const b = document.createElement('button');
+    b.textContent = state.coins>=r.cost ? 'Redeem' : `${r.cost-state.coins} to go`;
+    b.disabled = state.coins<r.cost; b.onclick = () => redeem(r);
+    el.appendChild(b); $('rewards').appendChild(el);
+  });
+}
+
+const d = new Date();
+$('clk').textContent = d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+$('date').textContent = d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+buildForest(); $('kate').textContent = lines.start; render(); showNotif();
+</script>
+</body>
+</html>
